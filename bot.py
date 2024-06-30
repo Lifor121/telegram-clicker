@@ -5,16 +5,17 @@ from aiogram.types import Message, WebAppInfo
 from aiogram.filters import CommandStart
 from aiogram.enums import ParseMode
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.client.bot import DefaultBotProperties
 
 def webapp_builder() -> InlineKeyboardBuilder:
     builder = InlineKeyboardBuilder()
     builder.button(
         text="Click It!",
         web_app=WebAppInfo(
-            url="..."
+            url="https://7c8f-185-16-138-151.ngrok-free.app"
         )
     )
-    return builder.as_morkup()
+    return builder.as_markup()
 
 router = Router()
 
@@ -26,7 +27,10 @@ async def start(message: Message) -> None:
     )
 
 async def main() -> None:
-    bot = Bot(..., parse_mode=ParseMode.HTML)
+    bot = Bot(
+        "6375608555:AAH97VEDEocMo5zH3UFdXSLXZJsyWfCaxjs", 
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+    )
     dp = Dispatcher()
     dp.include_router(router)
     await bot.delete_webhook(True)
