@@ -27,18 +27,33 @@
 <body>
     <div id="score">0</div>
     <img id="image" src="../static/milkis.png" alt="Milkis Image">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
+        const tg = window.Telegram.WebApp;
+        const defaultUrl = "https://91ba-194-50-13-161.ngrok-free.app";
+
+        async function fetchData(endpoint, data) {
+            try {
+                const response = await axios.post(`${defaultUrl}/${endpoint}`, data);
+                return response.data;
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
         let score = 0;
         const scoreElement = document.getElementById('score');
         const imageElement = document.getElementById('image');
 
-        function increaseScore() {
+        async function increaseScore() {
             score++;
             scoreElement.textContent = score;
             imageElement.style.transform = 'scale(0.9)';
             setTimeout(() => {
                 imageElement.style.transform = 'scale(1)';
             }, 100);
+            const response = await fetchData('click', { id: tg.initDataUnsafe.user.id, clicks: score });
         }
 
         imageElement.addEventListener('click', increaseScore);
