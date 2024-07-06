@@ -13,6 +13,7 @@ from aiogram.client.default import DefaultBotProperties
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 
 from typing import Callable, Awaitable, Any
 from tortoise import Tortoise
@@ -106,10 +107,17 @@ async def root(request: Request):
 
 @app.post("/click")
 async def click(request: Request, data: dict):
-    print(data)
     user = await User.filter(id=data["id"]).first()
     user.clicks += 1
     await user.save()
+
+@app.get("/get_clicks")
+async def get_clicks(id: int):
+    user = await User.filter(id=id).first()
+    print(user.clicks)
+    if not user:
+        return JSONResponse({"error": "User not found"}, status_code=404)
+    return JSONResponse({"clicks": user.clicks})
 
 @app.post("/webhook")
 async def webhook(request: Request):

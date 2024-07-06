@@ -15,11 +15,11 @@
         }
         #score {
             margin-top: 60px;
-            font-size: 100px;
+            font-size: 80px;
             margin-bottom: 20px;
         }
         #image {
-            max-width: 100%;
+            max-width: 70%;
             transition: transform 0.4s ease;
         }
     </style>
@@ -31,32 +31,54 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         const tg = window.Telegram.WebApp;
-        const defaultUrl = "https://91ba-194-50-13-161.ngrok-free.app";
+        const defaultUrl = "https://1e33-194-50-13-161.ngrok-free.app";
+
+        async function fetchClicks() {
+            try {
+                const userId = tg.initDataUnsafe.user.id;
+                const response = await fetch(`/get_clicks?id=${userId}`);
+                const data = await response.json();
+                return data.clicks;
+            } catch (error) {
+                console.error("Ошибка при получении кликов:", error);
+                return 0;
+            }
+        }
 
         async function fetchData(endpoint, data) {
             try {
                 const response = await axios.post(`${defaultUrl}/${endpoint}`, data);
                 return response.data;
             } catch (error) {
-                console.log(error);
+                console.error("Error fetching data:", error);
+                return null;
             }
         }
 
-        let score = 0;
-        const scoreElement = document.getElementById('score');
-        const imageElement = document.getElementById('image');
+        async function init() {
+            let clicks = await fetchClicks();
+            console.log("Текущий счёт:", clicks);
 
-        async function increaseScore() {
-            score++;
-            scoreElement.textContent = score;
-            imageElement.style.transform = 'scale(0.9)';
-            setTimeout(() => {
-                imageElement.style.transform = 'scale(1)';
-            }, 100);
-            const response = await fetchData('click', { id: tg.initDataUnsafe.user.id, clicks: score });
+            const scoreElement = document.getElementById('score');
+            scoreElement.textContent = clicks;
+            const imageElement = document.getElementById('image');
+
+            async function increaseScore() {
+                clicks++;
+                scoreElement.textContent = clicks;
+                imageElement.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    imageElement.style.transform = 'scale(1)';
+                }, 100);
+                const response = await fetchData('click', { id: tg.initDataUnsafe.user.id });
+            }
+
+            imageElement.addEventListener('click', increaseScore);
         }
 
-        imageElement.addEventListener('click', increaseScore);
+
+        init();
+
     </script>
 </body>
 </html>
