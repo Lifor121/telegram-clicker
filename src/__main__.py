@@ -58,8 +58,8 @@ dp = Dispatcher()
 dp.message.middleware(UserMiddleware())
 
 app = FastAPI(lifespan=lifespan)
-templates = Jinja2Templates(directory=r".\src\web\templates")
-app.mount("/static", StaticFiles(directory=r".\src\web\static"), name="static")
+templates = Jinja2Templates(directory=os.getenv('DIR_TEMP'))
+app.mount("/static", StaticFiles(directory=os.getenv('DIR_STAT')))
 
 @dp.message(CommandStart())
 async def start(message: Message):
