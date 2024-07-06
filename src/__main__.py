@@ -2,8 +2,8 @@ import os
 import uvicorn
 import dotenv
 
-from aiogram import Bot, Dispatcher, BaseMiddleware
-from aiogram.types import Message, WebAppInfo, Update
+from aiogram import Bot, Dispatcher, BaseMiddleware, F
+from aiogram.types import Message, WebAppInfo, Update, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.filters import CommandStart
 from aiogram.enums import ParseMode
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -60,36 +60,45 @@ app = FastAPI(lifespan=lifespan)
 templates = Jinja2Templates(directory=r".\src\web\templates")
 app.mount("/static", StaticFiles(directory=r".\src\web\static"), name="static")
 
-def webapp_builder() -> InlineKeyboardBuilder:
+@dp.message(CommandStart())
+async def start(message: Message):
+    kb = [[
+        KeyboardButton(text="Профиль"),
+        KeyboardButton(text="Таблица лидеров"),
+        KeyboardButton(text="Кликер"),
+        ],]
+    keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, input_field_placeholder="Приветик :3")
+    await message.answer(f"Добро пожаловать в Milkis Clicker!\n"
+                         f"Кликай как чёрт, соревнуйся с другими игроками в колличестве кликов", reply_markup=keyboard)
+
+@dp.message(F.text == "Профиль")
+async def profile(message: Message, user: User):
+    lb = await User.all().order_by('-clicks')
+    for i in range(len(lb)):
+        if lb[i].id == user.id:
+            break
+    await message.answer(f"Информация об игроке {user.username}:\n"
+                         f"Колличество кликов: {user.clicks}\n"
+                         f"Место в рейтинге: {i + 1}")
+
+@dp.message(F.text == "Таблица лидеров")
+async def leaderboard(message: Message):
+    lb = await User.all().order_by('-clicks').limit(10)
+    res = ['Никнейм - клики']
+    for i in range(len(lb)):
+        res.append(f'{i + 1}. @{lb[i].username} - {lb[i].clicks}')
+    await message.answer('\n'.join(res))
+
+@dp.message(F.text == "Кликер")
+async def clicker(message: Message):
     builder = InlineKeyboardBuilder()
     builder.button(
-        text="Click It!",
+        text="Кликер",
         web_app=WebAppInfo(
             url=os.getenv("WEBAPP_URL")
         )
     )
-    return builder.as_markup()
-
-@dp.message(CommandStart())
-async def start(message: Message, user: User):
-    clicks_stats = f"Колличество Ваших кликов: {user.clicks}" if user.clicks else None
-
-    markup = None
-    if not clicks_stats:
-        markup = (
-            InlineKeyboardBuilder()
-            .button(
-                text="Click It!",
-                web_app=WebAppInfo(
-                    url=os.getenv("WEBAPP_URL")
-                )
-            )
-        ).as_markup()
-    
-    await message.answer(
-        text=f"Привет, {message.from_user.first_name}!{clicks_stats}",
-        reply_markup=markup
-    )
+    await message.answer(text="Кликай по кнопке ниже", reply_markup=builder.as_markup())
 
 @app.get("/")
 async def root(request: Request):
