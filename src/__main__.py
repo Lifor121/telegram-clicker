@@ -19,6 +19,7 @@ from typing import Callable, Awaitable, Any
 from tortoise import Tortoise
 from models import User
 
+print('hello')
 dotenv.load_dotenv()
 
 class UserMiddleware(BaseMiddleware):
