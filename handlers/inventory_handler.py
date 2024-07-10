@@ -1,12 +1,14 @@
 import os
 
 from aiogram import F, Dispatcher
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, FSInputFile, CallbackQuery, InputMediaPhoto
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from db.models import User, Inventory, Skin
+from filters.admin_filter import AdminFilter
 
 
 class InventoryStates(StatesGroup):
@@ -88,21 +90,6 @@ async def inventory_navigation_handler(callback_query: CallbackQuery, state: FSM
     await callback_query.answer()
 
 
-async def add_item(message: Message):
-    user = await User.get(id=message.from_user.id)
-    skin = await Skin.get(item_id=int(message.text[5:]))
-    inventory_item, created = await Inventory.get_or_create(
-        user=user,
-        skin=skin,
-        defaults={'quantity': 1}
-    )
-    if not created:
-        inventory_item.quantity += 1
-        await inventory_item.save()
-    await message.answer(f'Предмет с id {message.text[5:]} добавлен в инвентарь')
-
-
 def register_handlers_inventory(dp: Dispatcher):
     dp.message.register(inventory_handler, F.text == "Инвентарь")
-    dp.message.register(add_item, F.text.regexp(r'hack_(.*)'))
     dp.callback_query.register(inventory_navigation_handler, F.data.in_(['previous_item', 'next_item']))
