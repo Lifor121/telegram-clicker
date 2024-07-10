@@ -22,29 +22,37 @@ async def user_handler(message: Message, state: FSMContext) -> None:
 
     kb = [[
         KeyboardButton(text="Меню"),
-        KeyboardButton(text="Поиск")    
+        KeyboardButton(text="Поиск")
     ]]
     keyboard = ReplyKeyboardMarkup(
-        keyboard=kb, 
-        resize_keyboard=True, 
+        keyboard=kb,
+        resize_keyboard=True,
         input_field_placeholder="Приветик :3"
     )
-    
+
     if user:
         lb = await User.all().order_by('-clicks')
         for i in range(len(lb)):
             if lb[i].id == user.id:
                 break
-        await message.answer_photo(
-        photo=user.avatar, 
-        caption=f"Информация об игроке @{user.username}:\n"
+        if user.avatar:
+            await message.answer_photo(
+                photo=user.avatar,
+                caption=f"Информация об игроке @{user.username}:\n"
+                        f"Количество кликов: {user.clicks}\n"
+                        f"Место в рейтинге: {i + 1}",
+                reply_markup=keyboard
+            )
+        else:
+            await message.answer(
+                f"Информация об игроке @{user.username}:\n"
                 f"Количество кликов: {user.clicks}\n"
                 f"Место в рейтинге: {i + 1}",
-        reply_markup=keyboard
-    )
+                reply_markup=keyboard
+            )
     else:
         await message.answer('Пользователь не найден', reply_markup=keyboard)
-    
+
     await state.clear()
 
 
