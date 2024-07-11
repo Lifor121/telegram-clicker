@@ -4,7 +4,7 @@ from db.models import User
 
 
 async def profile_handler(message: Message, user: User):
-    kb = [[KeyboardButton(text="Меню")]]
+    kb = [[KeyboardButton(text="Меню"), KeyboardButton(text='Инвентарь')]]
     keyboard = ReplyKeyboardMarkup(
         keyboard=kb,
         resize_keyboard=True,
@@ -33,3 +33,4 @@ async def profile_handler(message: Message, user: User):
 
 def register_handlers_profile(dp: Dispatcher):
     dp.message.register(profile_handler, F.text == "Профиль")
+    dp.message.register(profile_handler, F.data == 'back_inventory')

@@ -7,6 +7,7 @@ from .user_handler import register_handlers_user
 from .user_search_handler import register_handlers_user_search
 from .cancel_user_search_handler import register_handlers_cancel_user_search
 from .admin_handler import register_handlers_admin
+from .inventory_handler import register_handlers_inventory
 
 
 def register_handlers(dp: dispatcher):
@@ -18,3 +19,4 @@ def register_handlers(dp: dispatcher):
     register_handlers_user_search(dp)
     register_handlers_cancel_user_search(dp)
     register_handlers_admin(dp)
+    register_handlers_inventory(dp)

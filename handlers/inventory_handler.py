@@ -41,6 +41,16 @@ async def inventory_handler(message: Message, state: FSMContext):
         text="->",
         callback_data='next_item'
     )
+    builder.button(
+        text="Экипировать",
+        callback_data='equip_skin',
+
+    )
+    builder.button(
+        text="Назад",
+        callback_data='back_inventory'
+    )
+    builder.adjust(3)
     await message.answer_photo(photo,
                                caption=f"Предмет: {item.skin.name}, Количество: {item.quantity}, Описание: {item.skin.description}",
                                reply_markup=builder.as_markup())
@@ -64,7 +74,16 @@ async def edit_inventory_item(callback_query: CallbackQuery, items, index):
         text="->",
         callback_data='next_item'
     )
+    builder.button(
+        text="Назад",
+        callback_data='back_inventory'
+    )
+    builder.button(
+        text="Экипировать",
+        callback_data='equip_skin',
 
+    )
+    builder.adjust(3)
     await callback_query.message.edit_media(
         media=photo,
         reply_markup=builder.as_markup()
@@ -79,7 +98,11 @@ async def inventory_navigation_handler(callback_query: CallbackQuery, state: FSM
     data = await state.get_data()
     items = data.get('items', [])
     current_index = data.get('current_item_index', 0)
-
+    # Крч баг пофиксил костылем но прикол в том что если условно у тебя открыт инвентарь и рестартнуть бота то он уйдет
+    # в ошибку из-за того что len(items) == 0 а на 0 делить нельзя. Другой фикс пока не придумал.
+    if len(items) == 0:
+        await callback_query.answer()
+        return
     if callback_query.data == 'previous_item':
         current_index = (current_index - 1) % len(items)
     elif callback_query.data == 'next_item':
