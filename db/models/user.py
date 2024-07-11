@@ -9,6 +9,10 @@ class User(Model):
     role = fields.CharField(default='user', max_length=50)
     avatar = fields.CharField(max_length=255, null=True)
     inventory_items = fields.ReverseRelation['Inventory']
+    inventory_display = fields.BooleanField(default=True)
+    collections_display = fields.BooleanField(default=True)
+    sale_notifications = fields.BooleanField(default=True)
+    reward_notifications = fields.BooleanField(default=True)
 
 
 class Inventory(Model):
