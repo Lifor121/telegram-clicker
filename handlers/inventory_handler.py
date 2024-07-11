@@ -52,7 +52,7 @@ async def inventory_handler(message: Message, state: FSMContext):
     )
     builder.adjust(3)
     await message.answer_photo(photo,
-                               caption=f"Предмет: {item.skin.name}, Количество: {item.quantity}, Описание: {item.skin.description}",
+                               caption=f"Предмет: {item.skin.name}\n Количество: {item.quantity}\n Описание: {item.skin.description}",
                                reply_markup=builder.as_markup())
 
 
@@ -89,7 +89,7 @@ async def edit_inventory_item(callback_query: CallbackQuery, items, index):
         reply_markup=builder.as_markup()
     )
     await callback_query.message.edit_caption(
-        caption=f"Предмет: {item.skin.name}, Количество: {item.quantity}, Описание: {item.skin.description}",
+        caption=f"Предмет: {item.skin.name}\n Количество: {item.quantity}\n Описание: {item.skin.description}",
         reply_markup=builder.as_markup()
     )
 

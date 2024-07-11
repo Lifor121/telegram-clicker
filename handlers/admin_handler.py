@@ -28,8 +28,8 @@ async def add_item_handler(message: Message):
         defaults={'quantity': int(quantity)}
     )
     if not created:
-        await inventory_item.update_quantity(inventory_item.quantity + 1)
-    await message.answer(f'Предмет с id {message.text[5:]} добавлен в инвентарь')
+        await inventory_item.update_quantity(inventory_item.quantity + int(quantity))
+    await message.answer(f'Предмет с id {item_id} в количестве {quantity} добавлен в инвентарь')
 
 
 def register_handlers_admin(dp: Dispatcher):
