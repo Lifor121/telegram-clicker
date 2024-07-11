@@ -6,8 +6,8 @@ from db.models import User
 async def profile_handler(message: Message, user: User):
     kb = [[KeyboardButton(text="Меню")]]
     keyboard = ReplyKeyboardMarkup(
-        keyboard=kb, 
-        resize_keyboard=True, 
+        keyboard=kb,
+        resize_keyboard=True,
         input_field_placeholder="Вау магия"
     )
 
@@ -15,13 +15,20 @@ async def profile_handler(message: Message, user: User):
     for i in range(len(lb)):
         if lb[i].id == user.id:
             break
-    await message.answer_photo(
-        photo=user.avatar, 
-        caption=f"Информация об игроке @{user.username}:\n"
-                f"Количество кликов: {user.clicks}\n"
-                f"Место в рейтинге: {i + 1}",
-        reply_markup=keyboard
-    )
+    if user.avatar:
+        await message.answer_photo(
+            photo=user.avatar,
+            caption=f"Информация об игроке @{user.username}:\n"
+                    f"Количество кликов: {user.clicks}\n"
+                    f"Место в рейтинге: {i + 1}",
+            reply_markup=keyboard
+        )
+    else:
+        await message.answer(f"Информация об игроке @{user.username}:\n"
+                             f"Количество кликов: {user.clicks}\n"
+                             f"Место в рейтинге: {i + 1}",
+                             reply_markup=keyboard
+                             )
 
 
 def register_handlers_profile(dp: Dispatcher):

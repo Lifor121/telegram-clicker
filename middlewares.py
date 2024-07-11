@@ -17,10 +17,15 @@ class UserMiddleware(BaseMiddleware):
                 "Your username is not set. Please set it in your Telegram settings."
             )
         photos = await event.from_user.get_profile_photos()
+        print(len(photos.photos))
+        if len(photos.photos) != 0:
+            photo = photos.photos[0][0].file_id
+        else:
+            photo = None
         user, created = await User.get_or_create(
             id=event.from_user.id, 
             username=event.from_user.username,
-            defaults={"avatar": photos.photos[0][0].file_id} 
+            defaults={"avatar": photo}
         )
         if not created:
             user = await User.get(id=event.from_user.id)
