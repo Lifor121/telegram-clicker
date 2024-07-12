@@ -7,9 +7,30 @@ from aiogram.fsm.state import StatesGroup, State
 
 from db.models import User
 
+from .profile_handler import profile_handler
 
 class NameStates(StatesGroup):
     waiting_nick_or_id = State()
+
+
+async def user_search_handler(message: Message, state: FSMContext) -> None:
+    kb = [[KeyboardButton(text="Отмена")]]
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=kb, 
+        resize_keyboard=True,
+        input_field_placeholder="Username или telegram id"
+    )
+    await message.answer('Введите имя или id', reply_markup=keyboard)
+    await state.set_state(NameStates.waiting_nick_or_id)
+
+
+async def cancel_user_search(message: Message, state: FSMContext):
+    await state.clear()
+    await profile_handler(message)
+
+
+def register_handlers_cancel_user_search(dp: Dispatcher):
+    dp.message.register(cancel_user_search, NameStates.waiting_nick_or_id, F.text == 'Отмена')
 
 
 async def user_handler(message: Message, state: FSMContext) -> None:
@@ -56,5 +77,7 @@ async def user_handler(message: Message, state: FSMContext) -> None:
     await state.clear()
 
 
-def register_handlers_user(dp: Dispatcher):
+def register_handlers_search(dp: Dispatcher):
+    dp.message.register(user_search_handler, F.text == 'Поиск')
     dp.message.register(user_handler, NameStates.waiting_nick_or_id, F.text != 'Отмена')
+    dp.message.register(cancel_user_search, NameStates.waiting_nick_or_id, F.text == 'Отмена')
