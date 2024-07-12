@@ -1,7 +1,7 @@
 import os
 
 from aiogram.types import Update
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -17,18 +17,32 @@ def setup_routes(app: FastAPI, bot, dp):
     async def root(request: Request):
         return templates.TemplateResponse("index.html", {"request": request})
 
-    @app.post("/click")
-    async def click(request: Request, data: dict):
-        user = await User.filter(id=data["id"]).first()
-        user.clicks += 1
-        await user.save()
-
     @app.get("/get_clicks")
     async def get_clicks(id: int):
         user = await User.filter(id=id).first()
         if not user:
             return JSONResponse({"error": "User not found"}, status_code=404)
         return JSONResponse({"clicks": user.clicks})
+
+    @app.websocket("/ws/clicks")
+    async def websocket_endpoint(websocket: WebSocket):
+        await websocket.accept()
+        try:
+            while True:
+                data = await websocket.receive_json()
+                user_id = data.get("id")
+                if user_id:
+                    user = await User.filter(id=user_id).first()
+                    if user:
+                        user.clicks += 1
+                        await user.save()
+                        await websocket.send_json({"clicks": user.clicks})
+                    else:
+                        await websocket.send_json({"error": "User not found"})
+                else:
+                    await websocket.send_json({"error": "Invalid data"})
+        except WebSocketDisconnect:
+            print("Client disconnected")
 
     @app.post("/webhook")
     async def webhook(request: Request):

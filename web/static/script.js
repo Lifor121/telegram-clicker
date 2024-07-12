@@ -1,10 +1,10 @@
 const tg = window.Telegram.WebApp;
-const defaultUrl = "https://edeb-178-205-242-112.ngrok-free.app";
+const defaultUrl = "baa2-178-205-242-112.ngrok-free.app";
 
 async function fetchClicks() {
     try {
         const userId = tg.initDataUnsafe.user.id;
-        const response = await fetch(`/get_clicks?id=${userId}`);
+        const response = await fetch(`https://${defaultUrl}/get_clicks?id=${userId}`);
         const data = await response.json();
         return data.clicks;
     } catch (error) {
@@ -13,23 +13,35 @@ async function fetchClicks() {
     }
 }
 
-async function fetchData(endpoint, data) {
-    try {
-        const response = await axios.post(`${defaultUrl}/${endpoint}`, data);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching data:", error);
-        return null;
-    }
-}
-
 async function init() {
     let clicks = await fetchClicks();
-    console.log("Текущий счёт:", clicks);
-
-    const scoreElement = document.getElementById('score');
     scoreElement.textContent = clicks;
+    const scoreElement = document.getElementById('score');
     const imageElement = document.getElementById('image');
+
+    const ws = new WebSocket(`wss://${defaultUrl}/ws/clicks`);
+
+    ws.onopen = () => {
+        console.log("WebSocket connection established");
+    };
+
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.clicks !== undefined) {
+            clicks = data.clicks;
+            scoreElement.textContent = clicks;
+        } else if (data.error) {
+            console.error(data.error);
+        }
+    };
+
+    ws.onerror = (error) => {
+        console.error(`WebSocket error: ${error}`);
+    };
+
+    ws.onclose = () => {
+        console.log("WebSocket connection closed");
+    };
 
     function handleTouchStart(event) {
         event.preventDefault();
@@ -45,7 +57,7 @@ async function init() {
         setTimeout(() => {
             imageElement.style.transform = 'scale(1)';
         }, 100);
-        const response = await fetchData('click', { id: tg.initDataUnsafe.user.id });
+        ws.send(JSON.stringify({ id: tg.initDataUnsafe.user.id }));
     }
 
     imageElement.addEventListener('click', increaseScore);
