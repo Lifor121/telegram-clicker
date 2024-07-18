@@ -32,6 +32,10 @@ async def add_item_handler(message: Message):
     await message.answer(f'Предмет с id {item_id} в количестве {quantity} добавлен в инвентарь')
 
 
+async def add_collection_handler(message: Message):
+    pass
+
+
 def register_handlers_admin(dp: Dispatcher):
     dp.message.register(admin_handler, Command('admin'), AdminFilter())
     dp.message.register(add_item_handler, Command('hack'), AdminFilter())

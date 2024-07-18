@@ -8,7 +8,8 @@ async def start_handler(message: Message):
         KeyboardButton(text="Профиль"),
         KeyboardButton(text="Таблица лидеров"),
         KeyboardButton(text="Поиск"),
-        KeyboardButton(text="Кликер")
+        KeyboardButton(text="Кликер"),
+        KeyboardButton(text="Крафт")
     ]]
     keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, input_field_placeholder="Приветик :3")
     await message.answer(f"Добро пожаловать в Milkis Clicker!\n"

@@ -1,12 +1,12 @@
 const tg = window.Telegram.WebApp;
-const defaultUrl = "baa2-178-205-242-112.ngrok-free.app";
+const defaultUrl = "7946-188-225-127-225.ngrok-free.app";
 
 async function fetchClicks() {
     try {
         const userId = tg.initDataUnsafe.user.id;
         const response = await fetch(`https://${defaultUrl}/get_clicks?id=${userId}`);
         const data = await response.json();
-        return data.clicks;
+        return data;
     } catch (error) {
         console.error("Ошибка при получении кликов:", error);
         return 0;
@@ -14,10 +14,19 @@ async function fetchClicks() {
 }
 
 async function init() {
-    let clicks = await fetchClicks();
-    scoreElement.textContent = clicks;
+    let { clicks, equipped_skin } = await fetchClicks();
     const scoreElement = document.getElementById('score');
     const imageElement = document.getElementById('image');
+
+    scoreElement.textContent = clicks;
+
+    if (equipped_skin && equipped_skin.photo) {
+        imageElement.src = equipped_skin.photo;
+        imageElement.alt = equipped_skin.name;
+    } else {
+        imageElement.src = '../static/milkis.png';  // Стандартное изображение, если скин не одет
+        imageElement.alt = 'Milkis Image';
+    }
 
     const ws = new WebSocket(`wss://${defaultUrl}/ws/clicks`);
 

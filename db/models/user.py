@@ -9,6 +9,7 @@ class User(Model):
     role = fields.CharField(default='user', max_length=50)
     avatar = fields.CharField(max_length=255, null=True)
     inventory_items = fields.ReverseRelation['Inventory']
+    equipped_skin = fields.ForeignKeyField('models.Skin', related_name='equipped_users', null=True)
 
 
 class Inventory(Model):

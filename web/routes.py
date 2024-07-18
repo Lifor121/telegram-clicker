@@ -12,6 +12,7 @@ from db.models import User
 def setup_routes(app: FastAPI, bot, dp):
     templates = Jinja2Templates(directory=os.getenv('DIR_TEMP'))
     app.mount("/static", StaticFiles(directory=os.getenv('DIR_STAT')))
+    app.mount("/skins", StaticFiles(directory="db/skins"), name="skins")
 
     @app.get("/")
     async def root(request: Request):
@@ -19,10 +20,21 @@ def setup_routes(app: FastAPI, bot, dp):
 
     @app.get("/get_clicks")
     async def get_clicks(id: int):
-        user = await User.filter(id=id).first()
+        user = await User.filter(id=id).prefetch_related('equipped_skin__collection').first()
         if not user:
             return JSONResponse({"error": "User not found"}, status_code=404)
-        return JSONResponse({"clicks": user.clicks})
+        skin = user.equipped_skin
+        if skin:
+            collection_folder = skin.collection.folder_name
+            photo_path = os.path.join(collection_folder, skin.photo)
+            skin_data = {
+                "name": skin.name,
+                "description": skin.description,
+                "photo": f"/skins/{photo_path}",
+            }
+        else:
+            skin_data = None
+        return JSONResponse({"clicks": user.clicks, "equipped_skin": skin_data})
 
     @app.websocket("/ws/clicks")
     async def websocket_endpoint(websocket: WebSocket):
