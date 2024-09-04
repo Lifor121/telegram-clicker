@@ -17,7 +17,7 @@ class InventoryStates(StatesGroup):
 
 async def inventory_handler(message: Message, state: FSMContext):
     user = await User.get(id=message.from_user.id).prefetch_related('inventory_items__skin')
-    items = await Inventory.filter(user=user).prefetch_related('skin')
+    items = await Inventory.filter(user=user).prefetch_related('skin__collection')
     if not items:
         await message.answer("Инвентарь пуст.")
         return
@@ -27,7 +27,7 @@ async def inventory_handler(message: Message, state: FSMContext):
     await state.update_data(current_item_index=0)
 
     item = items[0]
-    photo = FSInputFile(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'db', 'skins', item.skin.photo)))
+    photo = FSInputFile(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'db', 'skins',item.skin.collection.folder_name,  item.skin.photo)))
     builder = InlineKeyboardBuilder()
     builder.button(
         text="<-",
@@ -50,7 +50,7 @@ async def edit_inventory_item(callback_query: CallbackQuery, items, index):
     item = items[index]
     photo = InputMediaPhoto(
         media=FSInputFile(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'db', 'skins',
-                                                       item.skin.photo))))
+                                                       item.skin.collection.folder_name, item.skin.photo))))
     builder = InlineKeyboardBuilder()
     builder.button(
         text="<-",
