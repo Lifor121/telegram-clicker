@@ -4,13 +4,18 @@ from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
 
 
 async def start_handler(message: Message):
-    kb = [[
-        KeyboardButton(text="Кликер"),
-        KeyboardButton(text="Профиль"),
-        KeyboardButton(text="Инвентарь"),
-        KeyboardButton(text="Крафт"),
-        KeyboardButton(text="Настройки")
-    ]]
+    kb = [
+        [
+            KeyboardButton(text="Кликер"),
+            KeyboardButton(text="Профиль"),
+            KeyboardButton(text="Инвентарь"),
+        ],
+        [
+            KeyboardButton(text="Крафт"),
+            KeyboardButton(text="Настройки(не работает лифор сигма)"),
+            KeyboardButton(text="Support")
+        ]
+    ]
     keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, input_field_placeholder="Приветик :3")
     await message.answer(f"Добро пожаловать в Milkis Clicker!\n"
                          f"Кликай как чёрт, соревнуйся с другими игроками в количестве кликов", reply_markup=keyboard)

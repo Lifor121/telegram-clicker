@@ -29,6 +29,7 @@ async def lifespan(app: FastAPI):
     await Tortoise.close_connections()
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 bot = Bot(os.getenv('BOT_TOKEN'), default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
@@ -39,4 +40,5 @@ setup_routes(app, bot, dp)
 
 
 if __name__ == "__main__":
+    logger.info("Starting the bot...")
     uvicorn.run(app)

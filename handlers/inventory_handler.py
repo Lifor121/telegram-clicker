@@ -7,7 +7,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, FSInputFile, CallbackQuery, InputMediaPhoto
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from db.models import User, Inventory, Skin
+from db.models import User, InventoryItem, Skin
 from filters.admin_filter import AdminFilter
 
 
@@ -17,7 +17,7 @@ class InventoryStates(StatesGroup):
 
 async def inventory_handler(message: Message, state: FSMContext):
     user = await User.get(id=message.from_user.id).prefetch_related('inventory_items__skin__collection')
-    items = await Inventory.filter(user=user).prefetch_related('skin')
+    items = await InventoryItem.filter(user=user).prefetch_related('skin__collection')
     if not items:
         await message.answer("Инвентарь пуст.")
         return
@@ -55,7 +55,6 @@ async def inventory_handler(message: Message, state: FSMContext):
     builder.adjust(3)
     await message.answer_photo(photo,
                                caption=f"Предмет: {item.skin.name}\n"
-                                       f"Количество: {item.quantity}\n"
                                        f"Описание: {item.skin.description}\n"
                                        f"Коллекция: {collection.name}",
                                reply_markup=builder.as_markup())
@@ -96,7 +95,6 @@ async def edit_inventory_item(callback_query: CallbackQuery, items, index):
     )
     await callback_query.message.edit_caption(
         caption=f"Предмет: {item.skin.name}\n"
-                f"Количество: {item.quantity}\n"
                 f"Описание: {item.skin.description}\n"
                 f"Коллекция: {collection.name}",
         reply_markup=builder.as_markup()

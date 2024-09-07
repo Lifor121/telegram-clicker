@@ -3,11 +3,11 @@ from typing import Optional
 from db.models import Collection, Skin
 
 RARITY_LEVELS = {
-    'basic': {'chance': 0.80, 'display': 'Обычный'},
-    'rare': {'chance': 0.15, 'display': 'Редкий'},
-    'epic': {'chance': 0.04, 'display': 'Эпический'},
-    'legendary': {'chance': 0.009, 'display': 'Легендарный'},
-    'mythic': {'chance': 0.001, 'display': 'Мифический'}
+    'B': {'chance': 0.80, 'display': 'B'},
+    'A': {'chance': 0.17, 'display': 'A'},
+    'S': {'chance': 0.03, 'display': 'S'},
+    'SS': {'chance': 0, 'display': 'SS'},
+    'C': {'chance': 0, 'display': 'C'}
 }
 
 async def random_skin(collection: Collection) -> Optional[Skin]:

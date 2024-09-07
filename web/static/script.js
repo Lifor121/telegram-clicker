@@ -1,5 +1,5 @@
 const tg = window.Telegram.WebApp;
-const defaultUrl = "95b2-178-205-246-153.ngrok-free.app";
+const defaultUrl = "99a9-178-207-26-204.ngrok-free.app";
 
 const MIN_CLICK_INTERVAL = 25; // Минимальный интервал между кликами в миллисекундах
 

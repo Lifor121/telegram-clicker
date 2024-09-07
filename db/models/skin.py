@@ -9,7 +9,7 @@ class Skin(Model):
     description = fields.TextField(default='Тут должно быть описание но админам стало лень')
     collection = fields.ForeignKeyField('models.Collection', related_name='skins')
     photo = fields.TextField()
-    chance = fields.TextField(default='null') # basic - 80%, rare - 15%, epic - 4%, legendary - 0.9%, mythic - 0.1%
+    chance = fields.TextField(default='null') # B - 80%, A - 17%, S - 3%, SS - 0%, C - 0%
 
 
 
