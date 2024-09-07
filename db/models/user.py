@@ -16,6 +16,9 @@ class User(Model):
     reward_notifications = fields.BooleanField(default=True)
     equipped_skin = fields.ForeignKeyField('models.Skin', related_name='equipped_users', null=True)
 
+    class Meta:
+        table = "users"
+
 
 class InventoryItem(Model):
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
