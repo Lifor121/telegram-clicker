@@ -2,13 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Milkis Clicker</title>
     <link rel="stylesheet" href="../static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="score">0</div>
-    <img id="image" src="../static/milkis.png" alt="Milkis Image">
+    <div class="container">
+        <h1 class="title">Milkis Clicker</h1>
+        <div class="score-container">
+            <div id="score">0</div>
+        </div>
+        <div class="image-container">
+            <img id="image" src="../static/milkis.png" alt="Milkis Image">
+        </div>
+    </div>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="../static/script.js"></script>

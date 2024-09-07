@@ -25,7 +25,8 @@ class UserMiddleware(BaseMiddleware):
         user, created = await User.get_or_create(
             id=event.from_user.id, 
             username=event.from_user.username,
-            defaults={"avatar": photo}
+            defaults={"avatar": photo},
+            role=""
         )
         if not created:
             user = await User.get(id=event.from_user.id)
