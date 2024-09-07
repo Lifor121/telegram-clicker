@@ -5,10 +5,10 @@ from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
 
 async def start_handler(message: Message):
     kb = [[
-        KeyboardButton(text="Профиль"),
-        KeyboardButton(text="Таблица лидеров"),
-        KeyboardButton(text="Поиск"),
         KeyboardButton(text="Кликер"),
+        KeyboardButton(text="Профиль"),
+        KeyboardButton(text="Инвентарь"),
+        KeyboardButton(text="Крафт"),
         KeyboardButton(text="Настройки")
     ]]
     keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, input_field_placeholder="Приветик :3")

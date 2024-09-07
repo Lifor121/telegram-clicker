@@ -1,11 +1,13 @@
-from aiogram import Dispatcher, F
-from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.fsm.context import FSMContext
-from .profile_handler import profile_handler
-
 from tortoise.functions import Lower
+
+from aiogram import F, Dispatcher
+from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
+
 from db.models import User
+
+from .profile_handler import profile_handler
 
 class NameStates(StatesGroup):
     waiting_nick_or_id = State()
@@ -22,13 +24,14 @@ async def user_search_handler(message: Message, state: FSMContext) -> None:
     await state.set_state(NameStates.waiting_nick_or_id)
 
 
-class NameStates(StatesGroup):
-    waiting_nick_or_id = State()
-
-
 async def cancel_user_search(message: Message, state: FSMContext):
     await state.clear()
     await profile_handler(message)
+
+
+def register_handlers_cancel_user_search(dp: Dispatcher):
+    dp.message.register(cancel_user_search, NameStates.waiting_nick_or_id, F.text == 'Отмена')
+
 
 async def user_handler(message: Message, state: FSMContext) -> None:
     if message.text.startswith('@'):
@@ -75,6 +78,6 @@ async def user_handler(message: Message, state: FSMContext) -> None:
 
 
 def register_handlers_search(dp: Dispatcher):
+    dp.message.register(user_search_handler, F.text == 'Поиск')
     dp.message.register(user_handler, NameStates.waiting_nick_or_id, F.text != 'Отмена')
     dp.message.register(cancel_user_search, NameStates.waiting_nick_or_id, F.text == 'Отмена')
-    dp.message.register(user_search_handler, F.text == 'Поиск')

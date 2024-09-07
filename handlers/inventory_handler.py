@@ -16,7 +16,7 @@ class InventoryStates(StatesGroup):
 
 
 async def inventory_handler(message: Message, state: FSMContext):
-    user = await User.get(id=message.from_user.id).prefetch_related('inventory_items__skin')
+    user = await User.get(id=message.from_user.id).prefetch_related('inventory_items__skin__collection')
     items = await Inventory.filter(user=user).prefetch_related('skin')
     if not items:
         await message.answer("Инвентарь пуст.")
@@ -27,7 +27,9 @@ async def inventory_handler(message: Message, state: FSMContext):
     await state.update_data(current_item_index=0)
 
     item = items[0]
-    photo = FSInputFile(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'db', 'skins', item.skin.photo)))
+    collection = await item.skin.collection
+    photo = FSInputFile(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'db', 'skins',
+                                                     collection.folder_name, item.skin.photo)))
     builder = InlineKeyboardBuilder()
     builder.button(
         text="<-",
@@ -41,16 +43,30 @@ async def inventory_handler(message: Message, state: FSMContext):
         text="->",
         callback_data='next_item'
     )
+    builder.button(
+        text="Экипировать",
+        callback_data='equip_skin',
+
+    )
+    builder.button(
+        text="Назад",
+        callback_data='back_inventory'
+    )
+    builder.adjust(3)
     await message.answer_photo(photo,
-                               caption=f"Предмет: {item.skin.name}, Количество: {item.quantity}, Описание: {item.skin.description}",
+                               caption=f"Предмет: {item.skin.name}\n"
+                                       f"Количество: {item.quantity}\n"
+                                       f"Описание: {item.skin.description}\n"
+                                       f"Коллекция: {collection.name}",
                                reply_markup=builder.as_markup())
 
 
 async def edit_inventory_item(callback_query: CallbackQuery, items, index):
     item = items[index]
+    collection = await item.skin.collection
     photo = InputMediaPhoto(
         media=FSInputFile(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'db', 'skins',
-                                                       item.skin.photo))))
+                                                       collection.folder_name, item.skin.photo))))
     builder = InlineKeyboardBuilder()
     builder.button(
         text="<-",
@@ -64,13 +80,25 @@ async def edit_inventory_item(callback_query: CallbackQuery, items, index):
         text="->",
         callback_data='next_item'
     )
+    builder.button(
+        text="Назад",
+        callback_data='back_inventory'
+    )
+    builder.button(
+        text="Экипировать",
+        callback_data='equip_skin',
 
+    )
+    builder.adjust(3)
     await callback_query.message.edit_media(
         media=photo,
         reply_markup=builder.as_markup()
     )
     await callback_query.message.edit_caption(
-        caption=f"Предмет: {item.skin.name}, Количество: {item.quantity}, Описание: {item.skin.description}",
+        caption=f"Предмет: {item.skin.name}\n"
+                f"Количество: {item.quantity}\n"
+                f"Описание: {item.skin.description}\n"
+                f"Коллекция: {collection.name}",
         reply_markup=builder.as_markup()
     )
 
@@ -79,7 +107,11 @@ async def inventory_navigation_handler(callback_query: CallbackQuery, state: FSM
     data = await state.get_data()
     items = data.get('items', [])
     current_index = data.get('current_item_index', 0)
-
+    # Крч баг пофиксил костылем но прикол в том что если условно у тебя открыт инвентарь и рестартнуть бота то он уйдет
+    # в ошибку из-за того что len(items) == 0 а на 0 делить нельзя. Другой фикс пока не придумал.
+    if len(items) == 0:
+        await callback_query.answer()
+        return
     if callback_query.data == 'previous_item':
         current_index = (current_index - 1) % len(items)
     elif callback_query.data == 'next_item':
@@ -90,6 +122,19 @@ async def inventory_navigation_handler(callback_query: CallbackQuery, state: FSM
     await callback_query.answer()
 
 
+async def equip_skin_handler(callback_query: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    items = data.get('items', [])
+    print(items)
+    current_index = data.get('current_item_index', 0)
+    user = await User.get(id=callback_query.from_user.id).prefetch_related('inventory_items__skin__collection')
+    print(current_index)
+    user.equipped_skin = items[current_index].skin
+    await user.save()
+    await callback_query.answer('Успешно одето')
+
+
 def register_handlers_inventory(dp: Dispatcher):
     dp.message.register(inventory_handler, F.text == "Инвентарь")
     dp.callback_query.register(inventory_navigation_handler, F.data.in_(['previous_item', 'next_item']))
+    dp.callback_query.register(equip_skin_handler, F.data == 'equip_skin')
