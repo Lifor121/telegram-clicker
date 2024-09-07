@@ -13,6 +13,7 @@ class User(Model):
     collections_display = fields.BooleanField(default=True)
     sale_notifications = fields.BooleanField(default=True)
     reward_notifications = fields.BooleanField(default=True)
+    equipped_skin = fields.ForeignKeyField('models.Skin', related_name='equipped_users', null=True)
 
 
 class Inventory(Model):
