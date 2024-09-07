@@ -1,16 +1,34 @@
-from tortoise.functions import Lower
-
-from aiogram import F, Dispatcher
+from aiogram import Dispatcher, F
 from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
-from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.context import FSMContext
+from .profile_handler import profile_handler
 
+from tortoise.functions import Lower
 from db.models import User
+
+class NameStates(StatesGroup):
+    waiting_nick_or_id = State()
+
+
+async def user_search_handler(message: Message, state: FSMContext) -> None:
+    kb = [[KeyboardButton(text="Отмена")]]
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=kb, 
+        resize_keyboard=True,
+        input_field_placeholder="Username или telegram id"
+    )
+    await message.answer('Введите имя или id', reply_markup=keyboard)
+    await state.set_state(NameStates.waiting_nick_or_id)
 
 
 class NameStates(StatesGroup):
     waiting_nick_or_id = State()
 
+
+async def cancel_user_search(message: Message, state: FSMContext):
+    await state.clear()
+    await profile_handler(message)
 
 async def user_handler(message: Message, state: FSMContext) -> None:
     if message.text.startswith('@'):
@@ -56,5 +74,7 @@ async def user_handler(message: Message, state: FSMContext) -> None:
     await state.clear()
 
 
-def register_handlers_user(dp: Dispatcher):
+def register_handlers_search(dp: Dispatcher):
     dp.message.register(user_handler, NameStates.waiting_nick_or_id, F.text != 'Отмена')
+    dp.message.register(cancel_user_search, NameStates.waiting_nick_or_id, F.text == 'Отмена')
+    dp.message.register(user_search_handler, F.text == 'Поиск')

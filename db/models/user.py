@@ -14,6 +14,9 @@ class User(Model):
     sale_notifications = fields.BooleanField(default=True)
     reward_notifications = fields.BooleanField(default=True)
 
+    class Meta:
+        table = "users"
+
 
 class Inventory(Model):
     id = fields.IntField(pk=True)
