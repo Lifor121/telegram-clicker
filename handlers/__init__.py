@@ -20,7 +20,6 @@ def register_handlers(dp: dispatcher):
     register_handlers_profile(dp)
     register_handlers_admin(dp)
     register_handlers_craft(dp)
-    register_handlers_inventory(dp)
     register_handlers_settings(dp)
     register_handlers_search(dp)
     register_handlers_invite_link(dp)

@@ -1,6 +1,7 @@
 from tortoise import fields
 from tortoise.models import Model
 import uuid
+from .websocket_mixin import WebSocketMixin
 
 
 class User(Model):
@@ -15,9 +16,7 @@ class User(Model):
     sale_notifications = fields.BooleanField(default=True)
     reward_notifications = fields.BooleanField(default=True)
     equipped_skin = fields.ForeignKeyField('models.Skin', related_name='equipped_users', null=True)
-
-    class Meta:
-        table = "users"
+    market_listings = fields.ReverseRelation['MarketListing']
 
 
 class InventoryItem(Model):

@@ -19,12 +19,12 @@ dotenv.load_dotenv()
 
 
 async def lifespan(app: FastAPI):
+    await init_db()
     await bot.set_webhook(
         url=f"{os.getenv('WEBAPP_URL')}/webhook",
         allowed_updates=dp.resolve_used_update_types(),
         drop_pending_updates=True
     )
-    await init_db()
     yield
     await Tortoise.close_connections()
 
