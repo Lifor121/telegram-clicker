@@ -4,6 +4,9 @@ from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
 
 
 async def start_handler(message: Message):
+    if message.get_args():  # Если есть аргументы, не обрабатываем здесь
+        return
+    
     kb = [
         [
             KeyboardButton(text="Кликер"),

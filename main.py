@@ -13,7 +13,7 @@ from tortoise import Tortoise
 from middlewares import UserMiddleware
 from db.init_db import init_db
 from web.routes import setup_routes
-from handlers import register_handlers
+from handlers import register_handlers, invite_link_handler, start_handler
 
 dotenv.load_dotenv()
 
@@ -35,6 +35,8 @@ bot = Bot(os.getenv('BOT_TOKEN'), default=DefaultBotProperties(parse_mode=ParseM
 dp = Dispatcher()
 dp.message.middleware(UserMiddleware())
 register_handlers(dp)
+invite_link_handler.register_handlers_invite_link(dp)
+start_handler.register_handlers_start(dp)
 app = FastAPI(lifespan=lifespan)
 setup_routes(app, bot, dp)
 
