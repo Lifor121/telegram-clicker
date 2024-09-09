@@ -450,3 +450,4 @@ def register_handlers_admin(dp: Dispatcher):
     dp.message.register(add_skin_description, AdminStates.adding_skin_description)
     dp.message.register(add_skin_photo, AdminStates.adding_skin_photo)
     dp.message.register(finish_adding_skin, AdminStates.adding_skin_chance)
+    
