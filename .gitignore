@@ -5,3 +5,4 @@ __pycache__
 pyproject.toml
 db/clicker.db-shm
 db/clicker.db-wal
+db/clicker.db
