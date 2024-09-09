@@ -3,8 +3,9 @@ from aiogram.filters import Command, CommandStart
 from aiogram.types import Message
 
 from db.models import User, InviteLink
-from filters.admin_filter import AdminFilter
+import logging
 
+import handlers.start_handler as start_handler
 
 async def cmd_invite(message: Message):
     user, _ = await User.get_or_create(id=message.from_user.id, defaults={"username": message.from_user.username})
@@ -23,28 +24,36 @@ async def cmd_invite(message: Message):
 
 
 async def cmd_start_with_args(message: Message):
-    args = message.get_args()
-    if args.startswith("INVITE_"):
-        await process_invite(message, args)
+    args = message.text.split()[1:]  # Получаем аргументы команды
+    if args and args[0].startswith("INVITE_"):
+        await process_invite(message, args[0])
     else:
-        # Если аргументы есть, но это не приглашение, передаем управление обычному обработчику start
-        await message.answer("Добро пожаловать! Используйте /invite, чтобы получить пригласительную ссылку.")
+        await start_handler.start_handler(message)
 
 
 async def process_invite(message: Message, invite_code: str):
+    logging.info(f"Processing invite code: {invite_code}")
     invite_link = await InviteLink.get_or_none(code=invite_code)
+    logging.info(f"Invite link found: {invite_link}")
 
     if invite_link and invite_link.uses < invite_link.max_uses:
         inviter = await User.get(id=invite_link.user_id)
-        inviter.clicks += 1
-        await inviter.save()
-
+        
         user, created = await User.get_or_create(id=message.from_user.id, defaults={"username": message.from_user.username})
 
         if created or not await InviteLink.filter(user=user).exists():
+            # Добавляем 2000 кликов создателю ссылки
+            inviter.clicks += 2000
+            await inviter.save()
+
+            # Добавляем 1000 кликов пользователю, перешедшему по ссылке
+            user.clicks += 1000
+            await user.save()
+
             invite_link.uses += 1
             await invite_link.save()
-            await message.answer(f"Вы успешно перешли по ссылке! Пользователь {inviter.username} получил 1 клик.")
+            
+            await message.answer(f"Вы успешно перешли по ссылке! Вы получили 1000 кликов, а пользователь {inviter.username} получил 2000 кликов.")
         else:
             await message.answer("Вы уже использовали пригласительную ссылку ранее.")
     elif invite_link and invite_link.uses >= invite_link.max_uses:
@@ -55,4 +64,4 @@ async def process_invite(message: Message, invite_code: str):
 
 def register_handlers_invite_link(dp: Dispatcher):
     dp.message.register(cmd_invite, Command('invite'))
-    dp.message.register(cmd_start_with_args, CommandStart(deep_link=True))
+    dp.message.register(cmd_start_with_args, CommandStart())

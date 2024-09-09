@@ -19,7 +19,7 @@ class User(Model):
     market_listings = fields.ReverseRelation['MarketListing']
 
     class Meta:
-        table = "user"  # Явно указываем имя таблицы
+        table = "user"  
 
 
 class InventoryItem(Model):
