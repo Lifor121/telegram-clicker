@@ -42,7 +42,7 @@ setup_routes(app, bot, dp)
 
 
 @dp.errors()
-async def error_handler(update: types.Update, exception: Exception):
+async def error_handler(event: types.ErrorEvent, exception: Exception):
     logger.exception(f"Необработанное исключение: {exception}")
     return True
 
