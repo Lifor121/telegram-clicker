@@ -9,6 +9,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from web.routes import send_user_data
+import logging
+
+logger = logging.getLogger(__name__)
 
 class NewInventoryStates(StatesGroup):
     viewing = State()
@@ -90,25 +93,33 @@ async def show_inventory_page(message_or_query, state: FSMContext, is_new=False)
         )
 
 async def inventory_navigation(callback: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    current_page = data['current_page']
-    items = data['items']
-    total_pages = (len(items) - 1) // 15 + 1
-
-    if callback.data == 'prev_page' and current_page > 0:
-        current_page -= 1
-    elif callback.data == 'next_page' and current_page < total_pages - 1:
-        current_page += 1
-    elif callback.data.startswith('slot_'):
-        slot_number = int(callback.data.split('_')[1]) - 1
-        item_index = current_page * 15 + slot_number
-        if item_index < len(items):
-            await state.update_data(current_item_index=item_index)
-            await show_item_details(callback, state, item_index)
+    try:
+        data = await state.get_data()
+        if not data:
+            await callback.answer("Инвентарь устарел. Пожалуйста, откройте инвентарь заново.", show_alert=True)
             return
+        
+        current_page = data.get('current_page', 0)  # Используем .get() с значением по умолчанию
+        items = data.get('items', [])
+        total_pages = (len(items) - 1) // 15 + 1
 
-    await state.update_data(current_page=current_page)
-    await show_inventory_page(callback, state)
+        if callback.data == 'prev_page' and current_page > 0:
+            current_page -= 1
+        elif callback.data == 'next_page' and current_page < total_pages - 1:
+            current_page += 1
+        elif callback.data.startswith('slot_'):
+            slot_number = int(callback.data.split('_')[1]) - 1
+            item_index = current_page * 15 + slot_number
+            if item_index < len(items):
+                await state.update_data(current_item_index=item_index)
+                await show_item_details(callback, state, item_index)
+                return
+
+        await state.update_data(current_page=current_page)
+        await show_inventory_page(callback, state)
+    except Exception as e:
+        logger.exception(f"Ошибка при навигации по инвентарю: {e}")
+        await callback.answer("Произошла ошибка при навигации по инвентарю", show_alert=True)
 
 async def show_item_details(callback: CallbackQuery, state: FSMContext, item_index: int):
     data = await state.get_data()
