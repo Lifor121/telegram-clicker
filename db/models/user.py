@@ -6,7 +6,7 @@ from .websocket_mixin import WebSocketMixin
 
 class User(Model):
     id = fields.IntField(pk=True)
-    username = fields.CharField(max_length=50, null=False)
+    username = fields.CharField(max_length=50, null=True)  # Изменил на null=True
     clicks = fields.IntField(default=0)
     role = fields.CharField(default='user', max_length=50)
     avatar = fields.CharField(max_length=255, null=True)
@@ -17,6 +17,9 @@ class User(Model):
     reward_notifications = fields.BooleanField(default=True)
     equipped_skin = fields.ForeignKeyField('models.Skin', related_name='equipped_users', null=True)
     market_listings = fields.ReverseRelation['MarketListing']
+
+    class Meta:
+        table = "user"  
 
 
 class InventoryItem(Model):
