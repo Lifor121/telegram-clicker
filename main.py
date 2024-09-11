@@ -3,7 +3,7 @@ import os
 import uvicorn
 import dotenv
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 
@@ -39,6 +39,12 @@ invite_link_handler.register_handlers_invite_link(dp)
 start_handler.register_handlers_start(dp)
 app = FastAPI(lifespan=lifespan)
 setup_routes(app, bot, dp)
+
+
+@dp.errors()
+async def error_handler(update: types.Update, exception: Exception):
+    logger.exception(f"Необработанное исключение: {exception}")
+    return True
 
 
 if __name__ == "__main__":
