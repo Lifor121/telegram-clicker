@@ -13,32 +13,38 @@ from web.routes import send_user_data
 class NewInventoryStates(StatesGroup):
     viewing = State()
 
-async def generate_inventory_image(user: User):
+async def generate_inventory_image(user: User, current_page: int):
     inventory_items = await InventoryItem.filter(user=user).prefetch_related('skin__collection')
     image = Image.open("./db/images/shop.png")
     draw = ImageDraw.Draw(image)
     font = ImageFont.truetype("./db/fonts/Jersey25-Regular.ttf", 40)
 
-    draw.text((10, 10), f"Inventory of {user.username}", fill='white', font=font)
+    draw.text((10, 10), f"Inventory of{user.username} {current_page + 1}", fill='white', font=font)
 
     cell_size = 180
     padding = 20
     start_x, start_y = 10, 130
+
+    items_per_page = 15
+    start_index = current_page * items_per_page
+    end_index = start_index + items_per_page
 
     for i in range(15):
         row = i // 5
         col = i % 5
         x = start_x + col * (cell_size + padding)
         y = start_y + row * (cell_size + padding)
-        # draw.text((x + 10, y + 5), str(i + 1), fill='white', font=font)
-        if i < len(inventory_items):
-            item = inventory_items[i]
+        
+        item_index = start_index + i
+        if item_index < len(inventory_items):
+            item = inventory_items[item_index]
             skin = item.skin
             skin_image = Image.open(f"./db/skins/{skin.collection.folder_name}/{skin.photo}").convert("RGBA")
             skin_image = skin_image.resize((cell_size - 20, cell_size - 20))
             cell_image = Image.new('RGBA', (cell_size - 20, cell_size - 20), (255, 255, 255, 0))
             cell_image.paste(skin_image, (0, 0), skin_image)
             image.paste(cell_image, (x + 10, y + 30), cell_image)
+
     temp_file = BytesIO()
     image.save(temp_file, format='PNG')
     temp_file.seek(0)
@@ -63,7 +69,8 @@ async def show_inventory_page(message_or_query, state: FSMContext, is_new=False)
     current_page = data['current_page']
     items = data['items']
 
-    inventory_image = await generate_inventory_image(await User.get(id=message_or_query.from_user.id))
+    user = await User.get(id=message_or_query.from_user.id)
+    inventory_image = await generate_inventory_image(user, current_page)
     
     keyboard = create_inventory_keyboard(current_page, len(items))
 
